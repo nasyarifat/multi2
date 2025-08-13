@@ -25,42 +25,54 @@ with tab1:
     st.header("Estimasi Panen")
 
     # Konfigurasi default
-    tingkat = 3
-    lubang_per_tingkat = 5
-    max_sayuran_per_lubang = 9
-    volume_per_drum = 200  # liter
+    tingkat = 3  # jumlah pipa
+    lubang_per_tingkat = 5  # lubang per pipa
+    volume_per_drum = 200  # liter (default alat)
 
-    total_lubang = tingkat * lubang_per_tingkat
-    max_sayuran_total = total_lubang * max_sayuran_per_lubang
-    total_volume_liter = total_lubang * volume_per_drum
+    # Hitungan kapasitas
+    total_lubang = tingkat * lubang_per_tingkat  # total lubang tanam
+    max_sayuran_total = total_lubang             # 1 lubang = 1 tanaman
+    total_volume_liter = volume_per_drum         # volume air tidak berubah
 
-    st.markdown(f"**Konfigurasi default:** {tingkat} tingkat × {lubang_per_tingkat} lubang per tingkat = {total_lubang} lubang")
-    st.markdown(f"Volume total drum: {total_volume_liter} liter (3 m³)")
+    st.markdown(f"Konfigurasi default: {tingkat} pipa × {lubang_per_tingkat} lubang = {total_lubang} lubang")
+    st.markdown(f"Volume drum: {total_volume_liter} liter")
 
     # Input pengguna
     jumlah_bibit = st.number_input("Jumlah Bibit Ikan (ekor)", min_value=1, step=1)
     bobot_awal = st.number_input("Bobot Awal per Ekor (gram)", min_value=0.0, step=0.1, value=5.0)
     bobot_akhir = st.number_input("Bobot Akhir per Ekor (gram)", min_value=0.0, step=0.1, value=500.0)
-    jumlah_sayuran = st.number_input(f"Jumlah Sayuran Total (maksimal {max_sayuran_total})", 
-                                      min_value=1, max_value=max_sayuran_total, step=1, value=int(max_sayuran_total * 0.8))
+    jumlah_sayuran = st.number_input(
+        f"Jumlah Sayuran Total (maksimal {max_sayuran_total})",
+        min_value=1, max_value=max_sayuran_total, step=1,
+        value=int(max_sayuran_total * 0.8)
+    )
     lama_pemeliharaan = st.number_input("Lama Pemeliharaan (hari)", min_value=1, step=1, value=60)
 
     harga_bibit = st.number_input("Harga Bibit per Ekor (Rp)", min_value=0, step=100, value=1500)
     harga_sayuran = st.number_input("Harga Sayuran per Tanaman (Rp)", min_value=0, step=100, value=2000)
 
     if st.button("Hitung Estimasi"):
+        # Perhitungan produksi ikan
         total_berat_kg = jumlah_bibit * bobot_akhir / 1000
         total_pakan_kg = jumlah_bibit * bobot_akhir * 1.5 / 1000
+
+        # Modal
         modal_bibit = jumlah_bibit * harga_bibit
         modal_sayuran = jumlah_sayuran * harga_sayuran
         modal_total = modal_bibit + modal_sayuran
+
+        # Efektivitas
         hasil_per_liter = total_berat_kg / total_volume_liter
         sayuran_efficiency = jumlah_sayuran / max_sayuran_total
 
+        # Output hasil
         st.success(f"Estimasi Total Bobot Panen: {total_berat_kg:.2f} kg")
         st.info(f"Estimasi Total Pakan Dibutuhkan: {total_pakan_kg:.2f} kg")
         st.write(f"Lama Pemeliharaan: {lama_pemeliharaan} hari")
-        st.write(f"Estimasi Modal Awal: Rp {modal_total:,} (Bibit: Rp {modal_bibit:,}, Sayuran: Rp {modal_sayuran:,})")
+        st.write(f"Estimasi Modal Awal: Rp {modal_total:,} "
+                 f"(Bibit: Rp {modal_bibit:,}, Sayuran: Rp {modal_sayuran:,})")
+
+        # Efektivitas sistem
         st.write("Efektivitas Sistem:")
         st.write(f"- Hasil Panen per Liter Air: {hasil_per_liter:.4f} kg/liter")
         st.write(f"- Efektivitas Penanaman Sayuran: {sayuran_efficiency*100:.2f}% dari kapasitas maksimal")
@@ -71,7 +83,7 @@ with tab1:
             st.success("📈 Hasil panen per liter air cukup baik.")
 
         if sayuran_efficiency < 0.7:
-            st.info("⚠️ Kapasitas sayuran belum maksimal.")
+            st.info("⚠ Kapasitas sayuran belum maksimal.")
         else:
             st.success("Sayuran mendekati kapasitas maksimal.")
 
@@ -205,3 +217,21 @@ with tab2:
         estimasi_pendapatan = forecast_result.iloc[0] * harga_jual
         st.subheader("💰 Estimasi Pendapatan (Bulan Pertama Forecast)")
         st.write(f"Rp {estimasi_pendapatan:,.0f}")
+
+        # SARAN
+    produksi_bulan_pertama = forecast_result.iloc[0]
+    if produksi_bulan_pertama < 10:
+        st.info("📉 Produksi rendah. Optimalkan pemeliharaan atau pakan.")
+    elif produksi_bulan_pertama > 50:
+        st.success("📈 Produksi tinggi. Siapkan pakan & strategi pemasaran.")
+    else:
+        st.write("🔄 Produksi stabil. Lanjutkan pemeliharaan.")
+
+    if estimasi_pendapatan < 200000:
+        st.warning("⚠️ Pendapatan rendah. Periksa harga jual & biaya produksi.")
+    else:
+        st.write("✅ Pendapatan baik. Pertahankan strategi.")
+else:
+    st.info("Silakan input data terlebih dahulu untuk melihat hasil forecast.")
+
+
