@@ -30,9 +30,9 @@ with tab1:
     volume_per_drum = 200  # liter (default alat)
 
     # Hitungan kapasitas
-    total_lubang = tingkat * lubang_per_tingkat  # total lubang tanam
-    max_sayuran_total = total_lubang             # 1 lubang = 1 tanaman
-    total_volume_liter = volume_per_drum         # volume air tidak berubah
+    total_lubang = tingkat * lubang_per_tingkat
+    max_sayuran_total = total_lubang
+    total_volume_liter = volume_per_drum
 
     st.markdown(f"Konfigurasi default: {tingkat} pipa × {lubang_per_tingkat} lubang = {total_lubang} lubang")
     st.markdown(f"Volume drum: {total_volume_liter} liter")
@@ -41,6 +41,7 @@ with tab1:
     jumlah_bibit = st.number_input("Jumlah Bibit Ikan (ekor)", min_value=1, step=1)
     bobot_awal = st.number_input("Bobot Awal per Ekor (gram)", min_value=0.0, step=0.1, value=5.0)
     bobot_akhir = st.number_input("Bobot Akhir per Ekor (gram)", min_value=0.0, step=0.1, value=500.0)
+    jumlah_panen = st.number_input("Jumlah Ikan yang Dipanen (ekor)", min_value=0, step=1, value=jumlah_bibit)
     jumlah_sayuran = st.number_input(
         f"Jumlah Sayuran Total (maksimal {max_sayuran_total})",
         min_value=1, max_value=max_sayuran_total, step=1,
@@ -51,88 +52,88 @@ with tab1:
     harga_bibit = st.number_input("Harga Bibit per Ekor (Rp)", min_value=0, step=100, value=1500)
     harga_sayuran = st.number_input("Harga Bibit Tanaman (Rp)", min_value=0, step=100, value=2000)
 
-   if st.button("Hitung Estimasi"):
-    # Perhitungan produksi ikan
-    total_berat_kg = jumlah_bibit * bobot_akhir / 1000
-    total_pakan_kg = jumlah_bibit * bobot_akhir * 1.5 / 1000  # FCR 1.5
+    # Tombol hitung estimasi
+    if st.button("Hitung Estimasi"):
+        # Perhitungan produksi ikan
+        total_berat_kg = jumlah_bibit * bobot_akhir / 1000
+        total_pakan_kg = jumlah_bibit * bobot_akhir * 1.5 / 1000  # FCR 1.5
 
-    # Modal
-    modal_bibit = jumlah_bibit * harga_bibit
-    modal_sayuran = harga_sayuran
-    modal_total = modal_bibit + modal_sayuran
+        # Modal
+        modal_bibit = jumlah_bibit * harga_bibit
+        modal_sayuran = harga_sayuran
+        modal_total = modal_bibit + modal_sayuran
 
-    # Efektivitas
-    hasil_per_liter = total_berat_kg / total_volume_liter
-    sayuran_efficiency = jumlah_sayuran / max_sayuran_total
+        # Efektivitas
+        hasil_per_liter = total_berat_kg / total_volume_liter
+        sayuran_efficiency = jumlah_sayuran / max_sayuran_total
 
-    # Survival Rate (SR)
-    # Asumsi kematian = jumlah bibit - jumlah panen (input dari user)
-    kematian_ikan = jumlah_bibit - jumlah_panen
-    survival_rate = (jumlah_panen / jumlah_bibit) * 100
+        # Survival Rate (SR)
+        kematian_ikan = jumlah_bibit - jumlah_panen
+        survival_rate = (jumlah_panen / jumlah_bibit) * 100 if jumlah_bibit > 0 else 0
 
-    # Output hasil utama
-    st.subheader("📊 Hasil Estimasi Produksi Akuaponik")
-    st.success(f"Estimasi Total Bobot Panen Ikan: **{total_berat_kg:.2f} kg**")
-    st.info(f"Estimasi Total Pakan Dibutuhkan: **{total_pakan_kg:.2f} kg**")
-    st.write(f"Lama Pemeliharaan: **{lama_pemeliharaan} hari**")
-    st.write(f"Estimasi Modal Awal: **Rp {modal_total:,}** "
-             f"(Bibit: Rp {modal_bibit:,}, Sayuran: Rp {modal_sayuran:,})")
+        # Output hasil utama
+        st.subheader("📊 Hasil Estimasi Produksi Akuaponik")
+        st.success(f"Estimasi Total Bobot Panen Ikan: **{total_berat_kg:.2f} kg**")
+        st.info(f"Estimasi Total Pakan Dibutuhkan: **{total_pakan_kg:.2f} kg**")
+        st.write(f"Lama Pemeliharaan: **{lama_pemeliharaan} hari**")
+        st.write(f"Estimasi Modal Awal: **Rp {modal_total:,}** "
+                 f"(Bibit: Rp {modal_bibit:,}, Sayuran: Rp {modal_sayuran:,})")
 
-    # Efektivitas sistem
-    st.subheader("⚙ Efektivitas Sistem")
-    st.write(f"- **Hasil Panen per Liter Air:** {hasil_per_liter:.4f} kg/liter")
-    st.write(f"- **Efektivitas Penanaman Sayuran:** {sayuran_efficiency*100:.2f}% dari kapasitas maksimal")
+        # Efektivitas sistem
+        st.subheader("⚙ Efektivitas Sistem")
+        st.write(f"- **Hasil Panen per Liter Air:** {hasil_per_liter:.4f} kg/liter")
+        st.write(f"- **Efektivitas Penanaman Sayuran:** {sayuran_efficiency*100:.2f}% dari kapasitas maksimal")
 
-    if hasil_per_liter < 0.05:
-        st.warning("📉 Hasil panen per liter air rendah. Perlu evaluasi kepadatan tebar atau kualitas air.")
-    else:
-        st.success("📈 Hasil panen per liter air cukup baik, menandakan sistem berjalan optimal.")
+        if hasil_per_liter < 0.05:
+            st.warning("📉 Hasil panen per liter air rendah. Perlu evaluasi kepadatan tebar atau kualitas air.")
+        else:
+            st.success("📈 Hasil panen per liter air cukup baik, menandakan sistem berjalan optimal.")
 
-    if sayuran_efficiency < 0.7:
-        st.info("⚠ Kapasitas penanaman sayuran belum maksimal. Masih ada peluang meningkatkan hasil.")
-    else:
-        st.success("🌱 Sayuran mendekati kapasitas maksimal, pemanfaatan lahan cukup efisien.")
+        if sayuran_efficiency < 0.7:
+            st.info("⚠ Kapasitas penanaman sayuran belum maksimal. Masih ada peluang meningkatkan hasil.")
+        else:
+            st.success("🌱 Sayuran mendekati kapasitas maksimal, pemanfaatan lahan cukup efisien.")
 
-    # Survival Rate
-    st.subheader("🐟 Survival Rate (SR) Ikan")
-    st.write(f"- Jumlah Ikan Awal: **{jumlah_bibit} ekor**")
-    st.write(f"- Jumlah Ikan Panen: **{jumlah_panen} ekor**")
-    st.write(f"- Jumlah Ikan Mati: **{kematian_ikan} ekor**")
-    st.write(f"- **Survival Rate:** {survival_rate:.2f}%")
+        # Survival Rate
+        st.subheader("🐟 Survival Rate (SR) Ikan")
+        st.write(f"- Jumlah Ikan Awal: **{jumlah_bibit} ekor**")
+        st.write(f"- Jumlah Ikan Panen: **{jumlah_panen} ekor**")
+        st.write(f"- Jumlah Ikan Mati: **{kematian_ikan} ekor**")
+        st.write(f"- **Survival Rate:** {survival_rate:.2f}%")
 
-    if survival_rate < 80:
-        st.warning("📉 Survival rate rendah. Perlu perbaikan manajemen kualitas air, pakan, atau kepadatan tebar.")
-    elif 80 <= survival_rate < 95:
-        st.info("⚠ Survival rate cukup baik, namun masih bisa ditingkatkan.")
-    else:
-        st.success("🐟 Survival rate sangat baik! Menandakan manajemen pemeliharaan efektif.")
+        if survival_rate < 80:
+            st.warning("📉 Survival rate rendah. Perlu perbaikan manajemen kualitas air, pakan, atau kepadatan tebar.")
+        elif 80 <= survival_rate < 95:
+            st.info("⚠ Survival rate cukup baik, namun masih bisa ditingkatkan.")
+        else:
+            st.success("🐟 Survival rate sangat baik! Menandakan manajemen pemeliharaan efektif.")
 
-    # Analisis dan Interpretasi Lengkap
-    st.subheader("📝 Analisis & Rekomendasi")
-    st.write("""
-    **Interpretasi Hasil:**
-    1. **Produksi Ikan:** Total bobot panen yang diperoleh menunjukkan potensi keuntungan yang dapat dihitung berdasarkan harga jual. Semakin besar bobot total, semakin tinggi pendapatan.
-    2. **Kebutuhan Pakan:** Total pakan dihitung berdasarkan rasio FCR 1.5. Jika pakan yang diberikan melebihi estimasi ini, perlu dievaluasi agar biaya pakan tidak membengkak.
-    3. **Efektivitas Air:** Nilai hasil panen per liter air menjadi indikator seberapa efisien sistem memanfaatkan volume air yang tersedia.
-    4. **Efisiensi Penanaman Sayuran:** Persentase mendekati 100% berarti lahan atau media tanam dimanfaatkan optimal.
-    5. **Survival Rate:** Nilai SR di atas 90% menandakan pengelolaan yang baik, sedangkan di bawah 80% perlu evaluasi pada kesehatan ikan, kualitas air, dan manajemen pakan.
+        # Analisis dan Interpretasi Lengkap
+        st.subheader("📝 Analisis & Rekomendasi")
+        st.write("""
+        **Interpretasi Hasil:**
+        1. **Produksi Ikan:** Total bobot panen yang diperoleh menunjukkan potensi keuntungan yang dapat dihitung berdasarkan harga jual. Semakin besar bobot total, semakin tinggi pendapatan.
+        2. **Kebutuhan Pakan:** Total pakan dihitung berdasarkan rasio FCR 1.5. Jika pakan yang diberikan melebihi estimasi ini, perlu dievaluasi agar biaya pakan tidak membengkak.
+        3. **Efektivitas Air:** Nilai hasil panen per liter air menjadi indikator seberapa efisien sistem memanfaatkan volume air yang tersedia.
+        4. **Efisiensi Penanaman Sayuran:** Persentase mendekati 100% berarti lahan atau media tanam dimanfaatkan optimal.
+        5. **Survival Rate:** Nilai SR di atas 90% menandakan pengelolaan yang baik, sedangkan di bawah 80% perlu evaluasi pada kesehatan ikan, kualitas air, dan manajemen pakan.
 
-    **Rekomendasi:**
-    - Tingkatkan efisiensi sayuran dengan memanfaatkan seluruh kapasitas media tanam.
-    - Pastikan kualitas air terjaga stabil untuk meningkatkan survival rate.
-    - Optimalkan pemberian pakan sesuai kebutuhan ikan agar efisien.
-    """)
+        **Rekomendasi:**
+        - Tingkatkan efisiensi sayuran dengan memanfaatkan seluruh kapasitas media tanam.
+        - Pastikan kualitas air terjaga stabil untuk meningkatkan survival rate.
+        - Optimalkan pemberian pakan sesuai kebutuhan ikan agar efisien.
+        """)
 
-    # Kesimpulan
-    st.subheader("📌 Kesimpulan")
-    st.write(f"""
-    Dengan **{jumlah_bibit} ekor** bibit dan lama pemeliharaan **{lama_pemeliharaan} hari**, sistem akuaponik ini 
-    diperkirakan menghasilkan **{total_berat_kg:.2f} kg** ikan dengan kebutuhan pakan sekitar **{total_pakan_kg:.2f} kg**. 
-    Survival rate sebesar **{survival_rate:.2f}%** menunjukkan bahwa 
-    { 'manajemen berjalan baik' if survival_rate >= 90 else 'perlu evaluasi lebih lanjut' }. 
-    Efektivitas pemanfaatan air sebesar **{hasil_per_liter:.4f} kg/liter** dan 
-    efisiensi penanaman sayuran sebesar **{sayuran_efficiency*100:.2f}%** memberikan gambaran umum kinerja sistem. 
-    """)
+        # Kesimpulan
+        st.subheader("📌 Kesimpulan")
+        st.write(f"""
+        Dengan **{jumlah_bibit} ekor** bibit dan lama pemeliharaan **{lama_pemeliharaan} hari**, sistem akuaponik ini 
+        diperkirakan menghasilkan **{total_berat_kg:.2f} kg** ikan dengan kebutuhan pakan sekitar **{total_pakan_kg:.2f} kg**. 
+        Survival rate sebesar **{survival_rate:.2f}%** menunjukkan bahwa 
+        { 'manajemen berjalan baik' if survival_rate >= 90 else 'perlu evaluasi lebih lanjut' }. 
+        Efektivitas pemanfaatan air sebesar **{hasil_per_liter:.4f} kg/liter** dan 
+        efisiensi penanaman sayuran sebesar **{sayuran_efficiency*100:.2f}%** memberikan gambaran umum kinerja sistem. 
+        """)
 
 # ==================== TAB 2 ====================
 with tab2:
@@ -266,4 +267,5 @@ with tab2:
         st.write(f"Rp {estimasi_pendapatan:,.0f}")
 
      
+
 
