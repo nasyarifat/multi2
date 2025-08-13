@@ -218,20 +218,4 @@ with tab2:
         st.subheader("💰 Estimasi Pendapatan (Bulan Pertama Forecast)")
         st.write(f"Rp {estimasi_pendapatan:,.0f}")
 
-        # SARAN
-    produksi_bulan_pertama = forecast_result.iloc[0]
-    if produksi_bulan_pertama < 10:
-        st.info("📉 Produksi rendah. Optimalkan pemeliharaan atau pakan.")
-    elif produksi_bulan_pertama > 50:
-        st.success("📈 Produksi tinggi. Siapkan pakan & strategi pemasaran.")
-    else:
-        st.write("🔄 Produksi stabil. Lanjutkan pemeliharaan.")
-
-    if estimasi_pendapatan < 200000:
-        st.warning("⚠️ Pendapatan rendah. Periksa harga jual & biaya produksi.")
-    else:
-        st.write("✅ Pendapatan baik. Pertahankan strategi.")
-else:
-    st.info("Silakan input data terlebih dahulu untuk melihat hasil forecast.")
-
-
+     
