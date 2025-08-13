@@ -12,20 +12,22 @@ bulan_mapping = {
     "July": "Juli", "August": "Agustus", "September": "September",
     "October": "Oktober", "November": "November", "December": "Desember"
 }
+# Reverse mapping untuk parsing datetime
+reverse_mapping = {v: k for k, v in bulan_mapping.items()}
 
 # ==================== APP ====================
 st.title("Kalkulator Akuaponik")
 
-# Buat tab
 tab1, tab2 = st.tabs(["Estimasi Panen", "Forecasting Produksi Ikan"])
 
 # ==================== TAB 1 ====================
 with tab1:
     st.header("Estimasi Panen")
 
+    # Konfigurasi default
     tingkat = 3
     lubang_per_tingkat = 5
-    max_sayuran_per_lubang = 10
+    max_sayuran_per_lubang = 9
     volume_per_drum = 200  # liter
 
     total_lubang = tingkat * lubang_per_tingkat
@@ -35,10 +37,12 @@ with tab1:
     st.markdown(f"**Konfigurasi default:** {tingkat} tingkat × {lubang_per_tingkat} lubang per tingkat = {total_lubang} lubang")
     st.markdown(f"Volume total drum: {total_volume_liter} liter (3 m³)")
 
+    # Input pengguna
     jumlah_bibit = st.number_input("Jumlah Bibit Ikan (ekor)", min_value=1, step=1)
     bobot_awal = st.number_input("Bobot Awal per Ekor (gram)", min_value=0.0, step=0.1, value=5.0)
     bobot_akhir = st.number_input("Bobot Akhir per Ekor (gram)", min_value=0.0, step=0.1, value=500.0)
-    jumlah_sayuran = st.number_input(f"Jumlah Sayuran Total (maksimal {max_sayuran_total})", min_value=1, max_value=max_sayuran_total, step=1, value=int(max_sayuran_total * 0.8))
+    jumlah_sayuran = st.number_input(f"Jumlah Sayuran Total (maksimal {max_sayuran_total})", 
+                                      min_value=1, max_value=max_sayuran_total, step=1, value=int(max_sayuran_total * 0.8))
     lama_pemeliharaan = st.number_input("Lama Pemeliharaan (hari)", min_value=1, step=1, value=60)
 
     harga_bibit = st.number_input("Harga Bibit per Ekor (Rp)", min_value=0, step=100, value=1500)
@@ -78,7 +82,7 @@ with tab2:
 
     st.header("🐟 Forecasting Produksi Ikan Akuaponik")
 
-    bulan_list = [bulan_mapping[b] for b in list(calendar.month_name)[1:]]
+    bulan_list = list(bulan_mapping.values())
     tahun_list = list(range(datetime.now().year, datetime.now().year + 6))
 
     with st.form("input_form"):
@@ -133,9 +137,8 @@ with tab2:
 
             if forecast_steps and harga_jual is not None:
                 df = st.session_state.data.copy()
-                # Parsing bulan Indonesia ke Inggris untuk datetime
-                reverse_mapping = {v: k for k, v in bulan_mapping.items()}
-                df["Periode"] = df["Periode"].apply(lambda x: x.replace(bulan_mapping.get(x.split()[0], ""), reverse_mapping[x.split()[0]]))
+                # Parsing bulan Indonesia ke Inggris
+                df["Periode"] = df["Periode"].apply(lambda x: x.replace(x.split()[0], reverse_mapping[x.split()[0]]))
                 df['Periode'] = pd.to_datetime(df['Periode'], format='%B %Y')
                 df = df.sort_values('Periode')
 
@@ -160,11 +163,13 @@ with tab2:
         df = st.session_state['df']
         harga_jual = st.session_state['harga_jual']
 
+        # Tabel forecast
         forecast_df = forecast_result.rename("Produksi (kg)").to_frame()
         forecast_df.index = forecast_df.index.strftime("%b %Y")
         st.subheader("📅 Hasil Forecasting")
         st.table(forecast_df.style.format("{:.2f}"))
 
+        # Plot
         hist_df = df.copy()
         hist_df["Tipe"] = "Historis"
 
@@ -192,6 +197,7 @@ with tab2:
 
         st.altair_chart(chart.properties(height=350), use_container_width=True)
 
+        # Hitung kebutuhan pakan & pendapatan
         kebutuhan_pakan = forecast_result.iloc[0] * 1.5
         st.subheader("🍽️ Estimasi Kebutuhan Pakan (Bulan Pertama Forecast)")
         st.write(f"{kebutuhan_pakan:.2f} kg")
